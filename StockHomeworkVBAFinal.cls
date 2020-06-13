@@ -20,10 +20,6 @@ For Each ws In Worksheets
 'Ticker
 Dim Ticker As String
 
-'Variable to store Count of ticker signs
-Dim CountofTicker As Double
-CountofTicker = 0
-
 'Variable to store Total Stock Amount
 Dim StockTotal As Double
 StockTotal = 0
@@ -39,6 +35,8 @@ Dim CloseAmount As Double
 CloseAmount = 0
 Dim FirstStock As Double
 FirstStock = 0
+Dim YearlyChange As Double
+YearlyChange = 0
 
 'Variables to calculate greatest increase, decrease and Total Value
 Dim Increase As Double
@@ -60,8 +58,8 @@ LastRow = ws.Range("A" & Rows.Count).End(xlUp).Row
 
 'Set Table Headers
 ws.Range("K1").Value = "Ticker"
-ws.Range("L1").Value = "Count"
-ws.Range("M1").Value = "Yearly Change"
+ws.Range("L1").Value = "Yearly Change"
+ws.Range("M1").Value = "Percent Change"
 ws.Range("N1").Value = "Total Stock Volume"
 ws.Range("Q1").Value = "Ticker"
 ws.Range("R1").Value = "Value"
@@ -87,14 +85,14 @@ If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
 'Capture Ticker Name
 Ticker = ws.Cells(i, 1).Value
 
-'Calculate Count, Stock Volume, and Close Price
-CountofTicker = CountofTicker + 1
+'Calculate Stock Volume, and Close Price, Yearly Change
 StockTotal = StockTotal + ws.Cells(i, 7).Value
 CloseAmount = ws.Cells(i, 6).Value
+YearlyChange = (CloseAmount - OpenAmount)
 
 'Print Value to Summary Table
 ws.Range("K" & SumTableRow).Value = Ticker
-ws.Range("L" & SumTableRow).Value = CountofTicker
+ws.Range("L" & SumTableRow).Value = YearlyChange
 ws.Range("N" & SumTableRow).Value = StockTotal
 
 If OpenAmount = 0 Then
@@ -110,11 +108,11 @@ End If
 'Format Cells by value - positive (Green)/ negative(red)
 '_________________________________________________
 
-If ws.Range("M" & SumTableRow).Value < 0 Then
-ws.Range("M" & SumTableRow).Interior.ColorIndex = 3
+If ws.Range("L" & SumTableRow).Value < 0 Then
+ws.Range("L" & SumTableRow).Interior.ColorIndex = 3
 
 Else
-ws.Range("M" & SumTableRow).Interior.ColorIndex = 4
+ws.Range("L" & SumTableRow).Interior.ColorIndex = 4
 End If
 
 '_________________________________________________
@@ -124,23 +122,19 @@ If StockTotal > ws.Range("R4").Value Then
 ws.Range("R4").Value = StockTotal
 ws.Range("Q4").Value = Ticker
 End If
-
 '________________________________________________
 
 'Add a row to the summary table
 SumTableRow = SumTableRow + 1
+
 'Capture OpenAmount for next ticker
 OpenAmount = ws.Cells(i + 1, 3).Value
-'Reset Ticker Count to 0
-CountofTicker = 0
 'Reset Total Stock Volume
 StockTotal = 0
-
 
 '__________________________________________
 'If Ticker Does match value below
 '_________________________________________
-
 
 Else
 'Add a count to the numer if tickers
@@ -158,7 +152,6 @@ ws.Range("R2").Value = Increase
 ws.Range("R2").NumberFormat = "0.00%"
 IncreaseRow = Application.WorksheetFunction.Match(Increase, ws.Range("M:M"), 0)
 ws.Range("Q2").Value = ws.Range("K" & IncreaseRow).Value
-
 
 Decrease = Application.WorksheetFunction.Min(ws.Columns("M").Value)
 ws.Range("R3").Value = Decrease
